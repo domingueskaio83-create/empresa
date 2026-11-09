@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Caixa | Minha Empresa</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#182230;--muted:#697586;--line:#e7ebf1;--green:#138a59;--red:#d94848;--blue:#315ee8;--navy:#17243a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:24px max(20px,calc((100% - 1160px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:22px;margin:0 0 5px}header p{margin:0;color:#c5cede;font-size:13px}
+main{max-width:1160px;margin:24px auto;padding:0 18px 40px}.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;font-size:13px}
+.primary{background:var(--blue);color:#fff}.secondary{background:#e9eefc;color:#2347b7}.danger{background:#fff0f0;color:#b42323}.small{padding:7px 10px;font-size:12px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:0 3px 12px #1a2b4510}
+.metric-label{font-size:12px;color:var(--muted);margin-bottom:9px}.metric{font-size:25px;font-weight:800;letter-spacing:-.5px}.positive{color:var(--green)}.negative{color:var(--red)}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:16px;align-items:start}.panel h2{font-size:17px;margin:0 0 16px}
+label{display:block;font-size:12px;font-weight:700;color:#465366;margin:12px 0 6px}
+input,select{width:100%;padding:11px 12px;border:1px solid #d9e0ea;border-radius:9px;background:#fff;font-size:14px;color:var(--ink);outline:none}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #315ee81a}
+.type-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.type-row button{background:#f0f2f6;color:#465366}.type-row button.active.income{background:#e6f6ee;color:#087345}.type-row button.active.expense{background:#fff0f0;color:#b42323}
+.full{width:100%;margin-top:16px}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:12px}
+.filters{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.filters input{max-width:180px}.filters select{max-width:160px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid var(--line)}th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}td:last-child,th:last-child{text-align:right}
+.pill{font-size:11px;padding:5px 8px;border-radius:20px;font-weight:700}.pill.in{background:#e6f6ee;color:#087345}.pill.out{background:#fff0f0;color:#b42323}
+.empty{text-align:center;color:var(--muted);padding:28px 8px}.advice{margin-top:16px}.advice-item{padding:12px 13px;border-radius:10px;background:#f6f8fc;margin-top:9px;font-size:13px;line-height:1.5}.advice-item strong{display:block;margin-bottom:3px}.advice-item.good{background:#eaf7f0}.advice-item.warn{background:#fff6e8}.advice-item.bad{background:#fff0f0}
+.bottom-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:var(--muted)}
+@media(max-width:850px){.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+@media(max-width:480px){header{padding:20px}.cards{gap:9px}.card{padding:14px}.metric{font-size:21px}main{margin-top:16px;padding:0 12px 28px}.filters input,.filters select{max-width:none;flex:1}table{font-size:12px}th,td{padding:10px 5px}.hide-mobile{display:none}}
+</style>
+</head>
+<body>
+<header>
+ <div><h1>📊 Controle de Caixa</h1><p>Organize as vendas, despesas e acompanhe a saúde financeira da sua empresa.</p></div>
+ <div style="font-size:12px;color:#c5cede">Seus dados ficam salvos neste navegador</div>
+</header>
+<main>
+ <div class="topline"><div><strong id="periodTitle">Resumo do mês</strong><div class="muted" style="font-size:12px;margin-top:4px">Acompanhe entradas, saídas e resultado.</div></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="monthFilter" type="month" style="width:auto"><button class="secondary" id="exportBtn">Exportar CSV</button></div></div>
+ <section class="cards">
+  <div class="card"><div class="metric-label">Vendas / Entradas</div><div class="metric positive" id="incomeTotal">R$ 0,00</div></div>
+  <div class="card"><div class="metric-label">Gastos / Saídas</div><div class="metric negative" id="expenseTotal">R$ 0,00</div></div>
+  <div class="card"><div class="metric-label">Resultado do período</div><div class="metric" id="balanceTotal">R$ 0,00</div></div>
+  <div class="card"><div class="metric-label">Margem de resultado</div><div class="metric" id="marginTotal">0%</div></div>
+ </section>
+ <section class="grid">
+  <div class="panel">
+   <h2 id="formTitle">Adicionar movimentação</h2>
+   <div class="type-row"><button type="button" id="incomeBtn" class="active income">＋ Venda / Entrada</button><button type="button" id="expenseBtn" class="expense">－ Gasto / Saída</button></div>
+   <form id="entryForm">
+    <label for="description">Descrição</label><input id="description" maxlength="70" placeholder="Ex.: Venda de produto, material..." required>
+    <label for="amount">Valor (R$)</label><input id="amount" type="number" min="0.01" step="0.01" placeholder="0,00" required>
+    <label for="date">Data</label><input id="date" type="date" required>
+    <label for="category">Categoria</label><select id="category"><option>Vendas</option><option>Serviços</option><option>Outros recebimentos</option><option>Mercadorias / Estoque</option><option>Aluguel</option><option>Contas (água, luz, internet)</option><option>Transporte</option><option>Marketing</option><option>Impostos / Taxas</option><option>Equipamentos</option><option>Outros gastos</option></select>
+    <button class="primary full" type="submit" id="saveBtn">Salvar movimentação</button>
+    <button class="secondary full" type="button" id="cancelEdit" style="display:none">Cancelar edição</button>
+   </form>
+   <p class="hint">Dica: registre cada venda e cada gasto assim que acontecer. Inclua também pequenas despesas para não perder dinheiro sem perceber.</p>
+  </div>
+  <div>
+   <div class="panel">
+    <h2>Movimentações</h2>
+    <div class="filters"><input id="searchInput" placeholder="Buscar descrição..."><select id="typeFilter"><option value="all">Todas</option><option value="income">Entradas</option><option value="expense">Saídas</option></select></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Descrição</th><th>Data</th><th>Tipo</th><th>Valor</th><th></th></tr></thead><tbody id="entriesBody"></tbody></table></div>
+    <div class="empty" id="emptyState">Nenhuma movimentação neste período.</div>
+   </div>
+   <div class="panel advice">
+    <h2>💡 O que posso melhorar?</h2>
+    <div id="adviceList"><div class="advice-item">Registre suas vendas e despesas para receber recomendações.</div></div>
+   </div>
+  </div>
+ </section>
+ <div class="bottom-actions"><button class="secondary" id="allMonthBtn">Ir para mês atual</button><button class="danger" id="clearBtn">Apagar todos os registros</button></div>
+ <p class="hint">Importante: este sistema salva os dados somente neste navegador e neste dispositivo. Não apague os dados do navegador sem antes exportar o CSV. O resultado é uma visão simples do caixa, não substitui contabilidade nem considera automaticamente estoque, dívidas ou impostos.</p>
+</main>
+<script>
+const KEY='controle_caixa_microempresa_v1';
+let entries=[];let type='income';let editingId=null;
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const today=()=>new Date().toLocaleDateString('en-CA');
+function load(){try{entries=JSON.parse(localStorage.getItem(KEY)||'[]')}catch{entries=[]}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(entries))}
+function setType(t){type=t;$('incomeBtn').classList.toggle('active',t==='income');$('expenseBtn').classList.toggle('active',t==='expense');$('category').innerHTML=(t==='income'?['Vendas','Serviços','Outros recebimentos']:['Mercadorias / Estoque','Aluguel','Contas (água, luz, internet)','Transporte','Marketing','Impostos / Taxas','Equipamentos','Outros gastos']).map(x=>`<option>${x}</option>`).join('')}
+function monthEntries(){const m=$('monthFilter').value;return entries.filter(e=>e.date.startsWith(m))}
+function render(){
+ const month=$('monthFilter').value;const list=monthEntries();const ins=list.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);const outs=list.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);const bal=ins-outs;const margin=ins?bal/ins*100:0;
+ $('periodTitle').textContent='Resumo de '+new Date(month+'-02T12:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+ $('incomeTotal').textContent=money(ins);$('expenseTotal').textContent=money(outs);$('balanceTotal').textContent=money(bal);$('balanceTotal').className='metric '+(bal>=0?'positive':'negative');$('marginTotal').textContent=(Number.isFinite(margin)?margin:0).toFixed(1).replace('.',',')+'%';$('marginTotal').className='metric '+(margin>=0?'positive':'negative');
+ const q=$('searchInput').value.toLowerCase();const f=$('typeFilter').value;
+ const shown=list.filter(e=>(f==='all'||e.type===f)&&e.description.toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+ $('entriesBody').innerHTML=shown.map(e=>`<tr><td><strong>${escapeHtml(e.description)}</strong><div class="muted" style="font-size:11px">${escapeHtml(e.category)}</div></td><td>${e.date.split('-').reverse().join('/')}</td><td><span class="pill ${e.type==='income'?'in':'out'}">${e.type==='income'?'Entrada':'Saída'}</span></td><td style="font-weight:700;color:${e.type==='income'?'#138a59':'#d94848'}">${e.type==='income'?'+':'−'} ${money(e.amount)}</td><td><button class="small secondary" onclick="editEntry(${e.id})">Editar</button> <button class="small danger" onclick="deleteEntry(${e.id})">×</button></td></tr>`).join('');
+ $('emptyState').style.display=shown.length?'none':'block';renderAdvice(ins,outs,bal,margin,list);
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderAdvice(ins,outs,bal,margin,list){
+ let a=[];
+ if(!list.length)a.push(['','Comece registrando todas as vendas e despesas. Assim consigo analisar seu caixa.']);
+ else{
+  if(bal<0)a.push(['bad','Você gastou mais do que vendeu','Revise os gastos não essenciais e veja quais podem ser reduzidos. Priorize recuperar o caixa antes de assumir novas despesas.']);
+  else if(bal===0)a.push(['warn','Seu caixa ficou no zero a zero','Tente aumentar a receita ou reduzir custos. Uma empresa precisa de sobra para imprevistos e investimentos.']);
+  else a.push(['good','Seu resultado está positivo','Continue acompanhando e separe parte do resultado para uma reserva da empresa.']);
+  if(ins>0&&outs/ins>.8)a.push(['warn','Despesas muito próximas das vendas','Seus gastos representam '+(outs/ins*100).toFixed(1).replace('.',',')+'% das entradas. Analise compras, taxas e despesas recorrentes.']);
+  if(ins>0&&margin<10)a.push(['warn','Margem apertada','Sua margem está abaixo de 10%. Confira se os preços cobrem custos, taxas e despesas antes de definir o lucro.']);
+  const byCat={};list.filter(e=>e.type==='expense').forEach(e=>byCat[e.category]=(byCat[e.category]||0)+e.amount);
+  const biggest=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+  if(biggest)a.push(['','Maior categoria de gasto: '+biggest[0],'Total de '+money(biggest[1])+'. Confira se esse custo é necessário e se existe alternativa mais econômica.']);
+  const days=new Set(list.map(e=>e.date)).size;
+  if(days<5)a.push(['warn','Poucos dias registrados','Registre as movimentações diariamente. A análise fica mais confiável quando não faltam vendas ou despesas.']);
+  a.push(['','Próximo passo','Compare este mês com o anterior e acompanhe se as vendas crescem mais rápido que os gastos.']);
+ }
+ $('adviceList').innerHTML=a.map(([cls,title,desc])=>`<div class="advice-item ${cls}"><strong>${title}</strong>${desc||''}</div>`).join('');
+}
+function resetForm(){editingId=null;$('entryForm').reset();$('date').value=today();$('formTitle').textContent='Adicionar movimentação';$('saveBtn').textContent='Salvar movimentação';$('cancelEdit').style.display='none';setType('income')}
+function editEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;editingId=id;setType(e.type);$('description').value=e.description;$('amount').value=e.amount;$('date').value=e.date;$('category').value=e.category;$('formTitle').textContent='Editar movimentação';$('saveBtn').textContent='Salvar alterações';$('cancelEdit').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
+function deleteEntry(id){if(!confirm('Deseja apagar esta movimentação?'))return;entries=entries.filter(e=>e.id!==id);persist();render()}
+$('incomeBtn').onclick=()=>setType('income');$('expenseBtn').onclick=()=>setType('expense');
+$('entryForm').onsubmit=e=>{e.preventDefault();const item={id:editingId||Date.now(),type,description:$('description').value.trim(),amount:Number($('amount').value),date:$('date').value,category:$('category').value};if(!item.description||!item.date||!Number.isFinite(item.amount)||item.amount<=0)return;if(editingId)entries=entries.map(x=>x.id===editingId?item:x);else entries.push(item);persist();resetForm();render()};
+$('cancelEdit').onclick=resetForm;$('monthFilter').onchange=render;$('searchInput').oninput=render;$('typeFilter').onchange=render;
+$('allMonthBtn').onclick=()=>{$('monthFilter').value=today().slice(0,7);render()};
+$('clearBtn').onclick=()=>{if(confirm('Tem certeza? Todos os registros salvos neste navegador serão apagados.')){entries=[];persist();resetForm();render()}};
+$('exportBtn').onclick=()=>{const rows=[['Descrição','Tipo','Categoria','Data','Valor (R$)'],...entries.map(e=>[e.description,e.type==='income'?'Entrada':'Saída',e.category,e.date,e.amount.toFixed(2).replace('.',',')])];const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='controle-de-caixa.csv';link.click();URL.revokeObjectURL(url)};
+$('monthFilter').value=today().slice(0,7);$('date').value=today();load();setType('income');render();
+</script>
+</body></html>
